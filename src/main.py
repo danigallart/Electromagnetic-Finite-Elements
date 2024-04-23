@@ -2,6 +2,7 @@
 import numpy as np
 import mesh_square_triangles as ms
 from scipy.spatial import Delaunay
+from element_matrix_triangle import element_matrix_triangle
 import matplotlib.pyplot as plt
 
 element_type = 1 #1 for triangular
@@ -46,14 +47,8 @@ area = np.zeros((M,1)) #Area of elements
 
 for e in range(M):
     if element_type == 1:
-        #Ae, be, area[e] = element_matrix_triangle(e, x, y, conn, eps[e], 0, 0)
-       pass
+        Ae, be, area[e] = element_matrix_triangle(e, x, y, conn, eps[e], eps[e], 0, 0)
     pass
-
-
-
-
-
 
 
 

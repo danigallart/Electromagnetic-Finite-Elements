@@ -25,11 +25,11 @@ def mesh_squareT(Lx=1.0,Ly=1.0,delx=0.1,dely=0.1,dx=0.02,dy=0.01):
     ybottomb = -Ly/2.
     ytopb = Ly/2.
 
-    outb_nodes = np.where((elements.points[:,0]==xLeftb) | (elements.points[:,0]==xrightb) | (elements.points[:,1]==ybottomb) | (elements.points[:,1]==ytopb))
+    outb_nodes = np.where((elements.points[:,0]==xLeftb) | (elements.points[:,0]==xrightb) | (elements.points[:,1]==ybottomb) | (elements.points[:,1]==ytopb))[0]
 
     #Nodes of the plates
-    ptop_nodes = np.where((elements.points[:,1]<dy/2.+1e-8) & (elements.points[:,1]>dy/2.-1e-8) & (elements.points[:,0]<dx/2.+1e-8) & (elements.points[:,0]>-dx/2.-1e-8))
-    pbot_nodes = np.where((elements.points[:,1]>-dy/2.-1e-8) & (elements.points[:,1]<-dy/2.+1e-8) & (elements.points[:,0]<dx/2.+1e-8) & (elements.points[:,0]>-dx/2.-1e-8))
+    ptop_nodes = np.where((elements.points[:,1]<dy/2.+1e-8) & (elements.points[:,1]>dy/2.-1e-8) & (elements.points[:,0]<dx/2.+1e-8) & (elements.points[:,0]>-dx/2.-1e-8))[0]
+    pbot_nodes = np.where((elements.points[:,1]>-dy/2.-1e-8) & (elements.points[:,1]<-dy/2.+1e-8) & (elements.points[:,0]<dx/2.+1e-8) & (elements.points[:,0]>-dx/2.-1e-8))[0]
 
     #Coordinates of the midpoints of the elements
     midpoints = []

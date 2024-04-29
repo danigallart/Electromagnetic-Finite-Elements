@@ -3,6 +3,7 @@ import numpy as np
 import mesh_square_triangles as ms
 from scipy.spatial import Delaunay
 from element_matrix_triangle import element_matrix_triangle
+from postprocess import  postprocessU
 import matplotlib.pyplot as plt
 
 element_type = 1 #1 for triangular
@@ -47,9 +48,42 @@ area = np.zeros((M,1)) #Area of elements
 
 for e in range(M):
     if element_type == 1:
-        Ae, be, area[e] = element_matrix_triangle(e, x, y, conn, eps[e], eps[e], 0, 0)
+        Ae, be, area[e], Jdet, x1, x2, x3, y1, y2, y3 = element_matrix_triangle(e, x, y, conn, eps[e][0], eps[e][0], 0, 0)
     pass
 
+    for i in range(Ne):
+        ig = conn[e,i]
+        for j in range(Ne):
+            jg = conn[e,j]
+            A[ig,jg] += Ae[i,j]
+        b[ig] += be[i]
+
+#Impose Dirichlet Bounday Conditions
+
+BCnodes = np.concatenate((outb_nodes,ptop_nodes,pbot_nodes))
+BCvalues = np.concatenate((np.zeros(outb_nodes.size),Vtop*np.ones(ptop_nodes.size),Vbottom*np.ones(pbot_nodes.size)))
+
+nodes = np.arange(N)
+nodes[BCnodes] = 0
+indexes = np.where(nodes != 0)[0]
+
+A2 = np.diag(np.diag(np.ones((A.shape[0],A.shape[0]))))
+A2[indexes,:] = 0.
+A[BCnodes, :] = 0.
+A = A + A2
+
+b[BCnodes] = BCvalues.reshape(-1,1)
+
+V = np.linalg.solve(A,b)
+
+#Post-processing: map V to a 2D grid
+
+x2d, y2d, V2d = postprocessU(Lx,Ly,delx,dely,N, elements, V)
+
+cmap = plt.colormaps['plasma']
+plt.pcolormesh(x2d,y2d,V2d,cmap=cmap)
+plt.colorbar()
+plt.show()
 
 
 ms.plot_mesh_squareT(elements.points,elements.simplices,outb_nodes,ptop_nodes,pbot_nodes, midpoints, dielectric_elements)

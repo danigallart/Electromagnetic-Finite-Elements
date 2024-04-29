@@ -35,14 +35,14 @@ def element_matrix_triangle(e, x, y, conn, pxe, pye, qe, fe):
     dydeta = y3 - y1
 
     Jdet = dxdpsi*dydeta - dxdeta*dydpsi
-
+    
     area_element = 0.5*Jdet
 
     #Entries of the inverse Jacobian matrix
-    Jinv11 = y3-y1
-    Jinv12 = -(y2 - y1)
-    Jinv21 = -(x3 - x1)
-    Jinv22 = -(x2 - x1)
+    Jinv11 = (y3-y1)/Jdet
+    Jinv12 = -(y2 - y1)/Jdet
+    Jinv21 = -(x3 - x1)/Jdet
+    Jinv22 = (x2 - x1)/Jdet
 
     #Derivative over the shape functions
     dNijdpsi = np.array([-1, 1, 0])
@@ -51,10 +51,11 @@ def element_matrix_triangle(e, x, y, conn, pxe, pye, qe, fe):
     #Compute the first part of the element matrix
     for i in range(Ne):
         for j in range(i,Ne):
-            Ae1[i,j] = pxe*(Jinv11*dNijdpsi[i] + Jinv12*dNijdeta[i]) * (Jinv11*dNijdpsi[j]*Jinv12*dNijdeta[j]) +\
-                       pye*(Jinv21*dNijdpsi[i] + Jinv22*dNijdeta[i]) * (Jinv21*dNijdpsi[j]*Jinv22*dNijdeta[j]) *\
-                       Jdet/2.0
+            Ae1[i,j] = (pxe*(Jinv11*dNijdpsi[i] + Jinv12*dNijdeta[i]) * (Jinv11*dNijdpsi[j]+Jinv12*dNijdeta[j]) +\
+                       pye*(Jinv21*dNijdpsi[i] + Jinv22*dNijdeta[i]) * (Jinv21*dNijdpsi[j]+Jinv22*dNijdeta[j])) *\
+                       Jdet/2.0       
             Ae1[j,i] = Ae1[i,j]
+            
 
     #Compute the second part of the element matrix
     gauss_weights = np.array([1./6., 1./6., 1./6.])
@@ -96,6 +97,6 @@ def element_matrix_triangle(e, x, y, conn, pxe, pye, qe, fe):
                 Ni = eta[k]
             sumg += gauss_weights[k]*Ni*fe*Jdet
         be[i] = sumg
-    return Ae, be, area_element
+    return Ae, be, area_element, Jdet, x1, x2, x3, y1, y2, y3
 
 

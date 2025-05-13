@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.spatial import Delaunay
+import matplotlib.pyplot as plt
 
 def meshgen_circle(obj, freq):
     c0 = 3*1e8        # m/sec, velocity of light in free space
@@ -52,6 +53,7 @@ def meshgen_circle(obj, freq):
     for i,j in zip(x,y):
         points.append([i,j])
     elements = Delaunay(points)
+
     #Nodes
     scatb_nodes = []
     pmlbin_nodes = []
@@ -87,12 +89,32 @@ def meshgen_circle(obj, freq):
     for i,j in zip(pmlin_points[:,0],pmlin_points[:,1]):
         pmlin_nodes.append(np.where((elements.points[:,0] == i) & (elements.points[:,1] == j))[0][0])
 
+    # Identify the elements of the scattering (inside) and (boundary)
+    scatin_elm = []
+    scatb_elm = []
+    for i in scatin_nodes:
+        scatin_elm.extend(list(np.where(elements.simplices == i)[0]))
+    scatin_elm = list(set(scatin_elm))
+    for i in scatb_nodes:
+        scatb_elm.extend(list(np.where(elements.simplices == i)[0]))
+    scatb_elm = list(set(scatb_elm))
+
+
         
 
-    return elements, scatb_nodes, scatin_nodes, pmlbin_nodes, pmlbout_nodes, pmlin_nodes
+    return elements, scatb_nodes, scatb_elm, scatin_nodes, scatin_elm, pmlbin_nodes, pmlbout_nodes, pmlin_nodes
         
-    
-
+def plot_mesh_circleT(elements, scatb_nodes, pmlbin_nodes, pmlbout_nodes, scatin_nodes, pmlin_nodes,x_p,y_p):
+    plt.axis('equal')  
+    plt.scatter(elements.points[:,0],elements.points[:,1])
+    plt.scatter(elements.points[scatb_nodes][:,0], elements.points[scatb_nodes][:,1])
+    plt.scatter(elements.points[pmlbin_nodes][:,0],elements.points[pmlbin_nodes][:,1])
+    plt.scatter(elements.points[pmlbout_nodes][:,0],elements.points[pmlbout_nodes][:,1])
+    plt.scatter(elements.points[scatin_nodes][:,0], elements.points[scatin_nodes][:,1])
+    plt.scatter(elements.points[pmlin_nodes][:,0], elements.points[pmlin_nodes][:,1], c='black')
+    plt.scatter(x_p,y_p)
+    plt.triplot(elements.points[:,0],elements.points[:,1], elements.simplices)
+    plt.show()
 
 
 

@@ -1,7 +1,8 @@
 
 import numpy as np
-from meshgen_circle import meshgen_circle
+from meshgen_circle import meshgen_circle, plot_mesh_circleT
 from matplotlib import pyplot as plt
+from pml import pml
 
 # Constants
 c0  = 3*1e8              # m/sec, velocity of light in free space
@@ -44,24 +45,59 @@ class structure:
         self.scat_type = scat_type
         self.scat_shape = scat_shape
 
-delh = lambda0/20
+delh = lambda0/40
 scat_shape = 1
 
 print('Creating the mesh')
 rc = 1*lambda0    # radius of circular scatterer
 obj = structure(rc, delh, scat_type, scat_shape)
 
-elements, scatb_nodes, scatin_nodes, pmlbin_nodes, pmlbout_nodes, pmlin_nodes = meshgen_circle(obj,freq)
+elements, scatb_nodes, scatb_elm, scatin_nodes, scatin_elm, pmlbin_nodes, pmlbout_nodes, pmlin_nodes = meshgen_circle(obj,freq)
 
 
 N = len(elements.points) # Number of nodes
 M = len(elements.simplices) # Number of elements
 
-plt.scatter(elements.points[:,0],elements.points[:,1])
-plt.scatter(elements.points[scatb_nodes][:,0], elements.points[scatb_nodes][:,1])
-plt.scatter(elements.points[pmlbin_nodes][:,0],elements.points[pmlbin_nodes][:,1])
-plt.scatter(elements.points[pmlbout_nodes][:,0],elements.points[pmlbout_nodes][:,1])
-plt.scatter(elements.points[scatin_nodes][:,0], elements.points[scatin_nodes][:,1])
-plt.scatter(elements.points[pmlin_nodes][:,0], elements.points[pmlin_nodes][:,1], c='black')
-#plt.triplot(elements.points[:,0],elements.points[:,1], elements.simplices)
-plt.show()
+# Material and Source parameters
+#Relative permittivity of elements
+epsrxx = np.ones(M)
+epsryy = np.ones(M)
+epsrzz = np.ones(M)
+epsrxy = np.zeros(M)
+epsryx = np.zeros(M)
+
+epsrxx[scatin_elm] = erxx
+epsryy[scatin_elm] = eryy
+epsrzz[scatin_elm] = erzz
+epsrxy[scatin_elm] = erxy
+epsryx[scatin_elm] = eryx
+
+x = elements.points[:,0]
+y = elements.points[:,1]
+
+#Implementation of the PML
+
+pmlbin_x = x[pmlbin_nodes]
+pmlbin_y = y[pmlbin_nodes]
+pmlbout_x = x[pmlbout_nodes]
+pmlbout_y = y[pmlbout_nodes]
+
+print('The LC-PML is being created')
+counter = 0
+x_p = []
+y_p = []
+for i in pmlin_nodes:
+    xc, yc, comptador, flag = pml(x[i],y[i],k0,pmlbin_x,pmlbin_y,pmlbout_x,pmlbout_y)
+    if flag:
+        x_p.append(x[i])
+        y_p.append(y[i]) 
+    x[i] = xc
+    y[i] = yc
+    counter += comptador
+    
+print('The LC-PML is finished', counter)
+
+plot_mesh_circleT(elements, scatb_nodes, pmlbin_nodes, pmlbout_nodes, scatin_nodes, pmlin_nodes,x_p,y_p)
+
+#Main Body
+

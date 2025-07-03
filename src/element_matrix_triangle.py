@@ -11,9 +11,9 @@ def element_matrix_triangle(e, x, y, conn, pxe, pye, qe, fe):
     #fe: f ""
 
     Ne = 3 #Number of nodes in an element
-    Ae1 = np.zeros((Ne,Ne))
-    Ae2 = np.zeros((Ne,Ne))
-    be = np.zeros((Ne,1))
+    Ae1 = np.zeros((Ne,Ne), dtype='complex_')
+    Ae2 = np.zeros((Ne,Ne), dtype='complex_')
+    be = np.zeros((Ne,1), dtype='complex_')
 
     n1 = conn[e, 0] #Node 1 of element e
     n2 = conn[e, 1] #Node 2 of element e

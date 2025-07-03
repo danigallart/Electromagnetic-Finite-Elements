@@ -40,7 +40,7 @@ def pml(x, y, k, pmlbin_x, pmlbin_y, pmlbout_x, pmlbout_y):
     vy = y - y0
     l = np.sqrt(vx**2 + vy**2)
 
-    if l < 1.e8:
+    if l < 1.e-8:
         xc = x
         yc = y
         return xc, yc, comptador, flag
@@ -51,15 +51,15 @@ def pml(x, y, k, pmlbin_x, pmlbin_y, pmlbout_x, pmlbout_y):
         scalar_product = (upx*uvx + upy*uvy)
         maximum_product_index = np.where(scalar_product == scalar_product.max())[0]
 
-        x1 = x[maximum_product_index] #PML bout x
-        y1 = y[maximum_product_index] #PML bout y
+        x1 = pmlbout_x[maximum_product_index] #PML bout x
+        y1 = pmlbout_y[maximum_product_index] #PML bout y
 
         dpml = np.sqrt((x1-x0)**2 + (y1-y0)**2) #Local PML thickness
         term = alpha_complex*((ksi**m) / (m*(dpml**(m-1))))
 
         xc = x + term*uvx #Complex coordinate x
         yc = y + term*uvy #Comples coordinate y
-
+        #print(xc)
         return xc, yc, comptador, flag
 
 
